@@ -556,28 +556,45 @@ class MDMaster {
   saveCurrentFile() {
     if (!this.currentFile) return;
 
-    try {
-      fs.writeFileSync(this.currentFile.path, this.currentFile.content, 'utf8');
-      const stat = fs.statSync(this.currentFile.path);
+    const fileName = this.currentFile.name.endsWith('.md')
+      ? this.currentFile.name
+      : `${this.currentFile.name}.md`;
+    const filePath = path.join(this.dataDir, fileName);
+
+    fs.writeFile(filePath, this.currentFile.content, 'utf8', (err) => {
+      const saveBtn = document.getElementById('saveBtn');
+
+      if (err) {
+        console.error('Failed to save file:', err);
+        if (saveBtn) {
+          const originalText = saveBtn.textContent;
+          saveBtn.textContent = 'Error saving!';
+          saveBtn.style.backgroundColor = 'var(--color-error)';
+          setTimeout(() => {
+            saveBtn.textContent = originalText;
+            saveBtn.style.backgroundColor = '';
+          }, 2000);
+        }
+        return;
+      }
+
+      this.currentFile.path = filePath;
+      const stat = fs.statSync(filePath);
       this.currentFile.modifiedDate = stat.mtime.toISOString();
       this.currentFile.size = stat.size;
-    } catch (err) {
-      console.error('Failed to save file:', err);
-    }
 
-    this.renderFileList();
+      this.renderFileList();
 
-    const saveBtn = document.getElementById('saveBtn');
-    if (saveBtn) {
-      const originalText = saveBtn.textContent;
-      saveBtn.textContent = 'Saved!';
-      saveBtn.style.backgroundColor = 'var(--color-success)';
-      
-      setTimeout(() => {
-        saveBtn.textContent = originalText;
-        saveBtn.style.backgroundColor = '';
-      }, 2000);
-    }
+      if (saveBtn) {
+        const originalText = saveBtn.textContent;
+        saveBtn.textContent = 'Saved!';
+        saveBtn.style.backgroundColor = 'var(--color-success)';
+        setTimeout(() => {
+          saveBtn.textContent = originalText;
+          saveBtn.style.backgroundColor = '';
+        }, 2000);
+      }
+    });
   }
   
   createNewFile() {
