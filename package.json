@@ -2,11 +2,11 @@
   "name": "md-master",
   "version": "1.0.0",
   "description": "",
-  "main": "main.js",
+  "main": "js/main.js",
   "scripts": {
     "test": "jest",
     "cypress": "cypress run",
-    "bundle": "node bundle.js"
+    "bundle": "node js/bundle.js"
   },
   "keywords": [],
   "author": "",

@@ -7,7 +7,7 @@ const {
   readMarkdownFile,
   writeMarkdownFile,
   listMarkdownFiles
-} = require('../helpers');
+} = require('../js/helpers');
 
 describe('parseMarkdown', () => {
   test('converts headers and emphasis', () => {
