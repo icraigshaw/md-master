@@ -2,8 +2,8 @@ const fs = require('fs');
 const path = require('path');
 const archiver = require('archiver');
 
-const files = ['manifest.json', 'main.js', 'index.html', 'app.js', 'style.css'];
-const distDir = path.join(__dirname, 'dist');
+const files = ['manifest.json', 'js/main.js', 'index.html', 'js/plugin.js', 'style.css'];
+const distDir = path.join(__dirname, '..', 'dist');
 const outputPath = path.join(distDir, 'md-master-plugin.zip');
 
 if (!fs.existsSync(distDir)) {
@@ -24,7 +24,7 @@ archive.on('error', err => {
 archive.pipe(output);
 
 files.forEach(file => {
-  archive.file(path.join(__dirname, file), { name: file });
+  archive.file(path.join(__dirname, '..', file), { name: file });
 });
 
 archive.finalize();

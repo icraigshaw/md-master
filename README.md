@@ -10,12 +10,12 @@ The easiest way to create the distributable archive is to run:
 npm run bundle
 ```
 
-This command executes `bundle.js` which creates `dist/md-master-plugin.zip`. The archive contains the following files at its root:
+This command executes `js/bundle.js` which creates `dist/md-master-plugin.zip`. The archive contains the following files at its root:
 
 - `manifest.json`
-- `main.js`
+- `js/main.js`
 - `index.html`
-- `app.js`
+- `js/plugin.js`
 - `style.css`
 
 You can import this zip file directly in Eagle via **Plugins → Install Plugin...**.
