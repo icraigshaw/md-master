@@ -1,0 +1,9 @@
+{
+  "name": "MD Master",
+  "description": "Markdown Manager for Eagle",
+  "version": "1.0.0",
+  "author": "icraigshaw",
+  "type": "window",
+  "main": "app.js",
+  "window": "index.html"
+}
