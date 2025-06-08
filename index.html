@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MD Master - Markdown Manager for Eagle</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Left Sidebar - Navigation -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h1 class="app-title">MD Master</h1>
+                <button class="btn btn--sm new-file-btn" id="newFileBtn">+ New</button>
+            </div>
+            
+            <div class="search-container">
+                <input type="text" class="form-control search-input" placeholder="Search files..." id="searchInput">
+            </div>
+            
+            <div class="sidebar-section">
+                <h3 class="sidebar-section-title">Library</h3>
+                <nav class="sidebar-nav">
+                    <div class="nav-item active" data-filter="all">
+                        <span class="nav-icon">📄</span>
+                        <span class="nav-label">All Files</span>
+                        <span class="nav-count">3</span>
+                    </div>
+                    <div class="nav-item" data-filter="recent">
+                        <span class="nav-icon">🕒</span>
+                        <span class="nav-label">Recent</span>
+                        <span class="nav-count">2</span>
+                    </div>
+                </nav>
+            </div>
+            
+            <div class="sidebar-section">
+                <div class="sidebar-section-header">
+                    <h3 class="sidebar-section-title">Folders</h3>
+                    <button class="btn btn--sm new-folder-btn" id="newFolderBtn">+</button>
+                </div>
+                <nav class="folder-nav">
+                    <div class="folder-item" data-folder="documents">
+                        <span class="folder-icon">📁</span>
+                        <span class="folder-label">Documents</span>
+                        <span class="folder-toggle">▼</span>
+                    </div>
+                    <div class="folder-children">
+                        <div class="nav-item sub-folder" data-filter="projects">
+                            <span class="nav-icon">📁</span>
+                            <span class="nav-label">Projects</span>
+                            <span class="nav-count">1</span>
+                        </div>
+                        <div class="nav-item sub-folder" data-filter="work">
+                            <span class="nav-icon">📁</span>
+                            <span class="nav-label">Work</span>
+                            <span class="nav-count">1</span>
+                        </div>
+                        <div class="nav-item sub-folder" data-filter="personal">
+                            <span class="nav-icon">📁</span>
+                            <span class="nav-label">Personal</span>
+                            <span class="nav-count">1</span>
+                        </div>
+                    </div>
+                </nav>
+            </div>
+        </div>
+        
+        <!-- Middle Panel - File List -->
+        <div class="file-list-panel">
+            <div class="file-list-header">
+                <h2 class="panel-title" id="panelTitle">All Files</h2>
+                <div class="sort-controls">
+                    <select class="form-control sort-select" id="sortSelect">
+                        <option value="name">Sort by Name</option>
+                        <option value="date">Sort by Date</option>
+                        <option value="size">Sort by Size</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="file-list" id="fileList">
+                <!-- Files will be populated by JavaScript -->
+            </div>
+        </div>
+        
+        <!-- Right Panel - Editor -->
+        <div class="editor-panel">
+            <div class="editor-header">
+                <div class="editor-tabs">
+                    <button class="tab-btn active" data-tab="edit">Edit</button>
+                    <button class="tab-btn" data-tab="preview">Preview</button>
+                    <button class="tab-btn" data-tab="split">Split</button>
+                </div>
+                <div class="editor-actions">
+                    <div class="word-count" id="wordCount">0 words</div>
+                    <button class="btn btn--sm" id="saveBtn">Save</button>
+                </div>
+            </div>
+            
+            <div class="editor-toolbar">
+                <button class="toolbar-btn" data-action="bold" title="Bold">B</button>
+                <button class="toolbar-btn" data-action="italic" title="Italic">I</button>
+                <button class="toolbar-btn" data-action="header" title="Header">#</button>
+                <button class="toolbar-btn" data-action="list" title="List">•</button>
+                <button class="toolbar-btn" data-action="link" title="Link">🔗</button>
+                <button class="toolbar-btn" data-action="code" title="Code">&lt;/&gt;</button>
+            </div>
+            
+            <div class="editor-content">
+                <div class="editor-container" id="editorContainer">
+                    <textarea class="markdown-editor" id="markdownEditor" placeholder="Start writing..."></textarea>
+                    <div class="markdown-preview hidden" id="markdownPreview"></div>
+                </div>
+                
+                <div class="split-view hidden" id="splitView">
+                    <div class="split-editor">
+                        <textarea class="markdown-editor" id="splitEditor" placeholder="Start writing..."></textarea>
+                    </div>
+                    <div class="split-preview">
+                        <div class="markdown-preview" id="splitPreview"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Welcome Message -->
+    <div class="welcome-message" id="welcomeMessage">
+        <h2>Welcome to MD Master</h2>
+        <p>Select a markdown file from the list to start editing, or create a new file.</p>
+    </div>
+    
+    <script src="app.js"></script>
+</body>
+</html>
