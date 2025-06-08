@@ -4,6 +4,6 @@
   "version": "1.0.0",
   "author": "icraigshaw",
   "type": "window",
-  "main": "app.js",
+  "main": "main.js",
   "window": "index.html"
 }
