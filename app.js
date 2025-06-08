@@ -2,6 +2,14 @@
 const fs = require('fs');
 const path = require('path');
 
+function showError(message) {
+  if (typeof alert !== 'undefined') {
+    alert(message);
+  } else {
+    console.error(message);
+  }
+}
+
 class MDMaster {
   constructor() {
     this.files = [];
@@ -25,34 +33,44 @@ class MDMaster {
   }
   
   loadFilesFromDisk() {
-    if (!fs.existsSync(this.dataDir)) {
-      fs.mkdirSync(this.dataDir, { recursive: true });
+    try {
+      if (!fs.existsSync(this.dataDir)) {
+        fs.mkdirSync(this.dataDir, { recursive: true });
+      }
+
+      const mdFiles = fs.readdirSync(this.dataDir).filter(f => f.endsWith('.md'));
+
+      if (mdFiles.length === 0) {
+        const examplePath = path.join(this.dataDir, 'Example.md');
+        const exampleContent = '# Welcome to MD Master\n\nStart writing your markdown here.';
+        fs.writeFileSync(examplePath, exampleContent, 'utf8');
+        mdFiles.push('Example.md');
+      }
+
+      this.files = mdFiles.map(file => {
+        const filePath = path.join(this.dataDir, file);
+        const content = fs.readFileSync(filePath, 'utf8');
+        const stat = fs.statSync(filePath);
+        return {
+          id: path.basename(file, '.md'),
+          name: file,
+          path: filePath,
+          content,
+          modifiedDate: stat.mtime.toISOString(),
+          wordCount: this.countWords(content),
+          size: stat.size,
+          folder: 'documents'
+        };
+      });
+    } catch (err) {
+      const msg = `Failed to load files: ${err.message}`;
+      if (typeof alert !== 'undefined') {
+        alert(msg);
+      } else {
+        console.error(msg);
+      }
+      this.files = [];
     }
-
-    const mdFiles = fs.readdirSync(this.dataDir).filter(f => f.endsWith('.md'));
-
-    if (mdFiles.length === 0) {
-      const examplePath = path.join(this.dataDir, 'Example.md');
-      const exampleContent = '# Welcome to MD Master\n\nStart writing your markdown here.';
-      fs.writeFileSync(examplePath, exampleContent, 'utf8');
-      mdFiles.push('Example.md');
-    }
-
-    this.files = mdFiles.map(file => {
-      const filePath = path.join(this.dataDir, file);
-      const content = fs.readFileSync(filePath, 'utf8');
-      const stat = fs.statSync(filePath);
-      return {
-        id: path.basename(file, '.md'),
-        name: file,
-        path: filePath,
-        content,
-        modifiedDate: stat.mtime.toISOString(),
-        wordCount: this.countWords(content),
-        size: stat.size,
-        folder: 'documents'
-      };
-    });
   }
   
   bindEvents() {
@@ -565,7 +583,7 @@ class MDMaster {
       const saveBtn = document.getElementById('saveBtn');
 
       if (err) {
-        console.error('Failed to save file:', err);
+        showError(`Failed to save file: ${err.message}`);
         if (saveBtn) {
           const originalText = saveBtn.textContent;
           saveBtn.textContent = 'Error saving!';
@@ -579,9 +597,13 @@ class MDMaster {
       }
 
       this.currentFile.path = filePath;
-      const stat = fs.statSync(filePath);
-      this.currentFile.modifiedDate = stat.mtime.toISOString();
-      this.currentFile.size = stat.size;
+      try {
+        const stat = fs.statSync(filePath);
+        this.currentFile.modifiedDate = stat.mtime.toISOString();
+        this.currentFile.size = stat.size;
+      } catch (statErr) {
+        showError(`Failed to read saved file info: ${statErr.message}`);
+      }
 
       this.renderFileList();
 
@@ -609,13 +631,13 @@ class MDMaster {
 
     fs.mkdir(dirPath, { recursive: true }, (dirErr) => {
       if (dirErr) {
-        alert(`Failed to create folder: ${dirErr.message}`);
+        showError(`Failed to create folder: ${dirErr.message}`);
         return;
       }
 
       fs.writeFile(filePath, content, 'utf8', (err) => {
         if (err) {
-          alert(`Failed to create file: ${err.message}`);
+          showError(`Failed to create file: ${err.message}`);
           return;
         }
 
@@ -638,7 +660,7 @@ class MDMaster {
 
     fs.mkdir(folderPath, { recursive: true }, (err) => {
       if (err) {
-        alert(`Failed to create folder: ${err.message}`);
+        showError(`Failed to create folder: ${err.message}`);
         return;
       }
 

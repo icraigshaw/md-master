@@ -38,19 +38,41 @@ function countWords(text) {
   return text.trim().split(/\s+/).filter(word => word.length > 0).length;
 }
 
+function showError(message) {
+  if (typeof alert !== 'undefined') {
+    alert(message);
+  } else {
+    console.error(message);
+  }
+}
+
 function readMarkdownFile(filePath) {
-  return fs.readFileSync(filePath, 'utf8');
+  try {
+    return fs.readFileSync(filePath, 'utf8');
+  } catch (err) {
+    showError(`Failed to read file: ${err.message}`);
+    return '';
+  }
 }
 
 function writeMarkdownFile(filePath, content) {
-  fs.writeFileSync(filePath, content, 'utf8');
+  try {
+    fs.writeFileSync(filePath, content, 'utf8');
+  } catch (err) {
+    showError(`Failed to write file: ${err.message}`);
+  }
 }
 
 function listMarkdownFiles(dir) {
   if (!fs.existsSync(dir)) return [];
-  return fs.readdirSync(dir)
-    .filter(f => f.endsWith('.md'))
-    .map(f => path.join(dir, f));
+  try {
+    return fs.readdirSync(dir)
+      .filter(f => f.endsWith('.md'))
+      .map(f => path.join(dir, f));
+  } catch (err) {
+    showError(`Failed to list files: ${err.message}`);
+    return [];
+  }
 }
 
 module.exports = {
