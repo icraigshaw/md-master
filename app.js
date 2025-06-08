@@ -1,4 +1,7 @@
 // MD Master Plugin - JavaScript functionality
+const fs = require('fs');
+const path = require('path');
+
 class MDMaster {
   constructor() {
     this.files = [];
@@ -11,47 +14,45 @@ class MDMaster {
   }
   
   init() {
-    this.loadSampleData();
+    this.dataDir = (typeof plugin !== 'undefined' && plugin.getDataPath)
+      ? plugin.getDataPath()
+      : path.join(__dirname, 'data');
+    this.loadFilesFromDisk();
     this.bindEvents();
     this.renderFileList();
     this.updateWordCount();
     this.updateFileCounts();
   }
   
-  loadSampleData() {
-    // Load sample markdown files from the provided data
-    this.files = [
-      {
-        id: "md001",
-        name: "Project Notes.md",
-        path: "/Documents/Projects/Project Notes.md", 
-        content: "# Project Notes\n\nThis is a sample markdown file with **bold text** and *italic text*.\n\n## Todo List\n- [ ] Review requirements\n- [x] Create initial draft\n- [ ] Submit for review\n\n## Links\n[Eagle App](https://eagle.cool)",
-        modifiedDate: "2025-01-15T10:30:00Z",
-        wordCount: 25,
-        size: 245,
-        folder: 'projects'
-      },
-      {
-        id: "md002", 
-        name: "Meeting Minutes.md",
-        path: "/Documents/Work/Meeting Minutes.md",
-        content: "# Weekly Team Meeting\n\n**Date:** January 15, 2025\n**Attendees:** John, Sarah, Mike\n\n## Agenda\n1. Project updates\n2. New feature discussions\n3. Next week planning\n\n## Action Items\n- Sarah: Update documentation\n- Mike: Fix UI bugs\n- John: Review pull requests",
-        modifiedDate: "2025-01-14T16:45:00Z", 
-        wordCount: 42,
-        size: 356,
-        folder: 'work'
-      },
-      {
-        id: "md003",
-        name: "Ideas.md", 
-        path: "/Documents/Personal/Ideas.md",
-        content: "# Random Ideas\n\n## App Concepts\n- Markdown editor for Eagle\n- Task management tool\n- Note-taking app\n\n## Features to Consider\n- Live preview\n- File organization\n- Search functionality\n- Export options\n\n> Sometimes the best ideas come when you least expect them.",
-        modifiedDate: "2025-01-13T09:15:00Z",
-        wordCount: 38,
-        size: 298,
-        folder: 'personal'
-      }
-    ];
+  loadFilesFromDisk() {
+    if (!fs.existsSync(this.dataDir)) {
+      fs.mkdirSync(this.dataDir, { recursive: true });
+    }
+
+    const mdFiles = fs.readdirSync(this.dataDir).filter(f => f.endsWith('.md'));
+
+    if (mdFiles.length === 0) {
+      const examplePath = path.join(this.dataDir, 'Example.md');
+      const exampleContent = '# Welcome to MD Master\n\nStart writing your markdown here.';
+      fs.writeFileSync(examplePath, exampleContent, 'utf8');
+      mdFiles.push('Example.md');
+    }
+
+    this.files = mdFiles.map(file => {
+      const filePath = path.join(this.dataDir, file);
+      const content = fs.readFileSync(filePath, 'utf8');
+      const stat = fs.statSync(filePath);
+      return {
+        id: path.basename(file, '.md'),
+        name: file,
+        path: filePath,
+        content,
+        modifiedDate: stat.mtime.toISOString(),
+        wordCount: this.countWords(content),
+        size: stat.size,
+        folder: 'documents'
+      };
+    });
   }
   
   bindEvents() {
@@ -251,7 +252,11 @@ class MDMaster {
   renderFileList(customFiles = null) {
     const fileList = document.getElementById('fileList');
     if (!fileList) return;
-    
+
+    if (!customFiles) {
+      this.loadFilesFromDisk();
+    }
+
     const files = customFiles || this.getFilteredFiles();
     
     fileList.innerHTML = '';
@@ -550,9 +555,18 @@ class MDMaster {
   
   saveCurrentFile() {
     if (!this.currentFile) return;
-    
-    // In a real Eagle plugin, this would save to the actual file system
-    // For now, we'll just show a confirmation
+
+    try {
+      fs.writeFileSync(this.currentFile.path, this.currentFile.content, 'utf8');
+      const stat = fs.statSync(this.currentFile.path);
+      this.currentFile.modifiedDate = stat.mtime.toISOString();
+      this.currentFile.size = stat.size;
+    } catch (err) {
+      console.error('Failed to save file:', err);
+    }
+
+    this.renderFileList();
+
     const saveBtn = document.getElementById('saveBtn');
     if (saveBtn) {
       const originalText = saveBtn.textContent;
@@ -569,21 +583,20 @@ class MDMaster {
   createNewFile() {
     const fileName = prompt('Enter file name:', 'New File.md');
     if (!fileName) return;
-    
-    const newFile = {
-      id: 'md' + Date.now(),
-      name: fileName.endsWith('.md') ? fileName : fileName + '.md',
-      path: `/Documents/${fileName}`,
-      content: '# ' + fileName.replace('.md', '') + '\n\nStart writing...',
-      modifiedDate: new Date().toISOString(),
-      wordCount: 2,
-      size: 50,
-      folder: 'personal'
-    };
-    
-    this.files.push(newFile);
+
+    const finalName = fileName.endsWith('.md') ? fileName : fileName + '.md';
+    const filePath = path.join(this.dataDir, finalName);
+    const content = '# ' + finalName.replace('.md', '') + '\n\nStart writing...';
+
+    fs.writeFileSync(filePath, content, 'utf8');
+
+    this.loadFilesFromDisk();
     this.renderFileList();
-    this.openFile(newFile);
+
+    const newFile = this.files.find(f => f.path === filePath);
+    if (newFile) {
+      this.openFile(newFile);
+    }
   }
   
   createNewFolder() {
