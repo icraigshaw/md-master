@@ -601,27 +601,50 @@ class MDMaster {
     const fileName = prompt('Enter file name:', 'New File.md');
     if (!fileName) return;
 
+    const folder = prompt('Enter folder (relative to library):', '') || '';
     const finalName = fileName.endsWith('.md') ? fileName : fileName + '.md';
-    const filePath = path.join(this.dataDir, finalName);
+    const dirPath = path.join(this.dataDir, folder);
+    const filePath = path.join(dirPath, finalName);
     const content = '# ' + finalName.replace('.md', '') + '\n\nStart writing...';
 
-    fs.writeFileSync(filePath, content, 'utf8');
+    fs.mkdir(dirPath, { recursive: true }, (dirErr) => {
+      if (dirErr) {
+        alert(`Failed to create folder: ${dirErr.message}`);
+        return;
+      }
 
-    this.loadFilesFromDisk();
-    this.renderFileList();
+      fs.writeFile(filePath, content, 'utf8', (err) => {
+        if (err) {
+          alert(`Failed to create file: ${err.message}`);
+          return;
+        }
 
-    const newFile = this.files.find(f => f.path === filePath);
-    if (newFile) {
-      this.openFile(newFile);
-    }
+        this.loadFilesFromDisk();
+        this.renderFileList();
+
+        const newFile = this.files.find(f => f.path === filePath);
+        if (newFile) {
+          this.openFile(newFile);
+        }
+      });
+    });
   }
   
   createNewFolder() {
     const folderName = prompt('Enter folder name:');
     if (!folderName) return;
-    
-    // In a real implementation, this would create an actual folder
-    alert(`Folder "${folderName}" would be created in a real implementation.`);
+
+    const folderPath = path.join(this.dataDir, folderName);
+
+    fs.mkdir(folderPath, { recursive: true }, (err) => {
+      if (err) {
+        alert(`Failed to create folder: ${err.message}`);
+        return;
+      }
+
+      this.loadFilesFromDisk();
+      this.renderFileList();
+    });
   }
 }
 
